@@ -5,6 +5,11 @@ alwaysApply: true
 
 # SybaKiller / Project Oodi
 
+## Sovereign split (see `sovereign-hft-architecture.mdc`)
+- `execution-engine/` — Rust weapon (HDC, AF_XDP, FIX). No Python on hot path.
+- `alpha-swarm/` — Python research only; outputs `hdc_masks.json`.
+- `sybakiller/` + `api/` — control plane (admin, testnet).
+
 ## Architecture
 - Pipeline: market data ingest → order book / state → strategy → risk → gateway → exchange adapter.
 - Hot path: no blocking I/O, no heap alloc per tick where avoidable, no unnecessary copies.

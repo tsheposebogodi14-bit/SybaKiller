@@ -1,6 +1,14 @@
 # SybaKiller
 
-Low-latency trading bot foundation: order book, risk, execution gateway, and FastAPI control plane.
+Sovereign trading stack: **alpha-swarm** (research) → **execution-engine** (Rust weapon) + **sybakiller** (control plane).
+
+| Directory | Role |
+|-----------|------|
+| [`execution-engine/`](execution-engine/) | Rust HDC + AF_XDP/FIX hot path (bare metal) |
+| [`alpha-swarm/`](alpha-swarm/) | Python agent swarm → `hdc_masks.json` |
+| [`sybakiller/`](sybakiller/) + [`api/`](api/) | Admin, testnet REST, live smoke |
+
+Master architecture: [docs/SOVEREIGN_ARCHITECTURE.md](docs/SOVEREIGN_ARCHITECTURE.md) · Cursor rule: `.cursor/rules/sovereign-hft-architecture.mdc`
 
 ## One-shot setup
 

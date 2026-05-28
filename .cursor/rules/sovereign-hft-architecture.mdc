@@ -1,0 +1,71 @@
+---
+description: Sovereign HFT master architecture — execution-engine (Rust) vs alpha-swarm (Python)
+globs: execution-engine/**,alpha-swarm/**,docs/SOVEREIGN_ARCHITECTURE.md
+alwaysApply: false
+---
+
+# Sovereign Trading Infrastructure — Principal Systems Engineer Standards
+
+## Role
+
+You are a Principal Systems Engineer specializing in HFT, Linux kernel-bypass networking, and agentic AI workflows. Build sovereign, bare-metal trading infrastructure with **zero cross-contamination** between intelligence and execution.
+
+## Two environments (strict separation)
+
+| Directory | Role | Language | Constraints |
+|-----------|------|----------|-------------|
+| `execution-engine/` | The Weapon — ultra-low-latency execution | Rust | PREEMPT_RT, isolated CPUs, no Python on hot path |
+| `alpha-swarm/` | The Sandbox — research & mask generation | Python | Ollama agents, offline/backtest only; outputs JSON masks |
+
+**Never** import Python into `execution-engine/`. **Never** place live order logic in `alpha-swarm/`.
+
+## execution-engine/ (The Weapon)
+
+### Networking
+- **AF_XDP + eBPF** via `aya` / `xsk-rs` or `afxdp-rs` — bypass kernel stack; read raw Ethernet into user-space UMEM.
+- TX: inject pre-serialized FIX frames onto NIC TX ring.
+
+### Memory / concurrency
+- **Zero heap allocation in the hot path.**
+- Lock-free **SPSC** ring buffers (`rtrb` or equivalent).
+- Hot-path structs: `#[repr(align(64))]` — cache-line aligned.
+
+### HDC logic engine
+- Boot: load JSON config with 10,000-bit target masks.
+- Hot path: **AVX-512** (`std::arch::x86_64`) bitwise XOR + popcount vs incoming market feature vectors.
+- Optimize for **temporal arbitrage** (macro-accumulation, jitter-tolerant) — not sub-µs micro-arb.
+
+### Execution
+- Custom **FIX** client; pre-serialized Ethernet frames to TX ring.
+- Tolerate satellite/high-jitter links in trigger design.
+
+## alpha-swarm/ (The Sandbox)
+
+### Swarm agents (Ollama-connected research lab)
+1. **Data Archivist** — `.pcap` ingest, dropped-packet repair, hex → Parquet.
+2. **Feature Miner** — OBI, VPIN, packet inter-arrival jitter before volume spikes.
+3. **Strategy Evolution** — genetic algorithms → binary HDC masks.
+4. **Stress-Test** — backtest masks under simulated drops and spoofing.
+
+### Output contract (only handoff to Rust)
+Write `alpha-swarm/output/hdc_masks.json` (or path in config):
+
+```json
+{
+  "target_hypervector_mask": "<hex, 10000 bits>",
+  "similarity_threshold": 0.0,
+  "version": 1,
+  "provenance": { "agent": "strategy_evolution", "symbol": "BTCUSDT" }
+}
+```
+
+`execution-engine` reads this file on boot; **never** mutates it.
+
+## Code quality (unforgiving)
+- No `TODO` / `pass` stubs in production modules — scaffold with real types and explicit `unimplemented!` only behind `cfg(feature)` for kernel-bypass.
+- No API keys or secrets in repo.
+- Risk and mask validation before any live TX.
+
+## Legacy control plane
+
+`sybakiller/` + `api/` remain the **Python control plane** (health, admin, Binance REST) until migrated. Do not merge its hot path with `execution-engine/`.

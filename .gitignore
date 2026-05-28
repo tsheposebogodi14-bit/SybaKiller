@@ -7,3 +7,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+execution-engine/target/
+alpha-swarm/.venv/
+alpha-swarm/data/
+alpha-swarm/output/*.json
