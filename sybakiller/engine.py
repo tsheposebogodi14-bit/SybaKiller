@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 
 from sybakiller.adapters.base import ExchangeAdapter
 from sybakiller.config import Settings, get_settings
+from sybakiller.exchanges.binance import BinanceExchangeAdapter
 from sybakiller.gateway import ExecutionGateway, GatewayResult
 from sybakiller.market_data import MarketDataFeed
 from sybakiller.order_book import OrderBook
@@ -213,6 +214,10 @@ class TradingEngine:
                 continue
             self.last_tick = tick
             self.tick_count += 1
+            if self.gateway is not None and isinstance(
+                self.gateway.adapter, BinanceExchangeAdapter
+            ):
+                self.gateway.adapter.note_quote(str(tick.symbol), tick.bid, tick.ask)
 
             for strategy in self._strategies:
                 on_tick = getattr(strategy, "on_tick", None)

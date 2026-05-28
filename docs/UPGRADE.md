@@ -24,7 +24,7 @@ Pin breaking majors in `pyproject.toml` if needed after `make upgrade`.
 | Priority | Item | Why |
 |----------|------|-----|
 | P0 | User Data Stream (order/fill WS) | Live order state without polling |
-| P0 | Exchange filter cache (`exchangeInfo`) | Avoid NOTIONAL / PRICE_FILTER 400s |
+| P0 | ~~Exchange filter cache (`exchangeInfo`)~~ | Done — pre-submit validation on Binance adapter |
 | P1 | Redis + snapshot on by default in `docker compose` | Recovery across API restarts |
 | P1 | Prometheus metrics on `/metrics` | Latency, reject rate, feed lag |
 | P2 | TimescaleDB tick + order history | Research and audit |

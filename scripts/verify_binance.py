@@ -7,7 +7,7 @@ import asyncio
 import sys
 
 from sybakiller.config import get_settings
-from sybakiller.exchanges.binance import BINANCE_API, BINANCE_TESTNET_API
+from sybakiller.exchanges.constants import BINANCE_API, BINANCE_TESTNET_API
 from sybakiller.feeds.binance import BinanceLiveFeed
 
 

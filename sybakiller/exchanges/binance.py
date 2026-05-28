@@ -12,13 +12,12 @@ from urllib.parse import urlencode
 import aiohttp
 
 from sybakiller.adapters.base import ExchangeAdapter
+from sybakiller.exchanges.constants import BINANCE_API, BINANCE_TESTNET_API
+from sybakiller.exchanges.filters import ExchangeFilterCache
 from sybakiller.types import Order, OrderId
 from sybakiller.venues.types import BINANCE_CEX, VenueProfile
 
 logger = logging.getLogger(__name__)
-
-BINANCE_API = "https://api.binance.com"
-BINANCE_TESTNET_API = "https://testnet.binance.vision"
 
 
 class BinanceExchangeAdapter(ExchangeAdapter):
@@ -36,6 +35,8 @@ class BinanceExchangeAdapter(ExchangeAdapter):
         self._base = BINANCE_TESTNET_API if testnet else BINANCE_API
         self._session: aiohttp.ClientSession | None = None
         self._limiter = self.rate_limiter
+        self._filters = ExchangeFilterCache(testnet=testnet)
+        self._quotes: dict[str, tuple[float, float]] = {}
 
     @property
     def venue(self) -> VenueProfile:
@@ -88,7 +89,23 @@ class BinanceExchangeAdapter(ExchangeAdapter):
                 raise RuntimeError(f"unexpected binance response: {body}")
             return body
 
+    def note_quote(self, symbol: str, bid: float, ask: float) -> None:
+        self._quotes[symbol.upper()] = (bid, ask)
+
     async def submit_order(self, order: Order) -> OrderId:
+        sym = str(order.symbol).upper()
+        rules = await self._filters.get(sym)
+        bid, ask = self._quotes.get(sym, (order.price, order.price))
+        filter_err = rules.validate_limit_order(
+            side=order.side.value,
+            quantity=order.quantity,
+            price=order.price,
+            ref_bid=bid,
+            ref_ask=ask,
+        )
+        if filter_err is not None:
+            raise RuntimeError(f"binance filter: {filter_err}")
+
         params: dict[str, Any] = {
             "symbol": str(order.symbol).upper(),
             "side": order.side.value.upper(),
