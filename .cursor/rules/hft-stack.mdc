@@ -1,0 +1,21 @@
+---
+description: SybaKiller HFT architecture and coding standards
+alwaysApply: true
+---
+
+# SybaKiller / Project Oodi
+
+## Architecture
+- Pipeline: market data ingest → order book / state → strategy → risk → gateway → exchange adapter.
+- Hot path: no blocking I/O, no heap alloc per tick where avoidable, no unnecessary copies.
+- Control plane (FastAPI, admin) stays off the hot path.
+
+## Stack
+- Python 3.11+, strict type hints, PEP 8.
+- FastAPI for HTTP control plane only.
+- JAX only for offline batch/backtest unless profiled on live path.
+
+## Code quality
+- No placeholder snippets (`...`, `pass # TODO` in production modules).
+- Risk checks before any outbound order; idempotent cancel/replace.
+- Never log API keys or full sensitive order payloads.
