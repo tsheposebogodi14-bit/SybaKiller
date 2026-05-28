@@ -67,8 +67,16 @@ make verify
 3. Enable **Privacy Mode** for strategy code.
 4. Add exchange API docs under **Features → Docs** for `@Docs` in chat.
 
+## Binance API keys (testnet first)
+
+```bash
+# Browser: https://testnet.binance.vision/ → Log in with GitHub → API key
+make binance-setup
+make verify-binance
+```
+
 ## Still manual (venue-specific)
 
-- Exchange API keys in `.env`
+- Mainnet keys only when you intentionally set `BINANCE_TESTNET=false`
 - MT5 / MQL5 bridge (Windows terminal)
 - Production TLS and secrets manager

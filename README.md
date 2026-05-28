@@ -68,11 +68,21 @@ curl http://127.0.0.1:8000/status
 
 Configure symbols in `.env`: `MARKET_DATA_SYMBOLS=BTCUSDT,ETHUSDT`
 
-## Live execution (optional)
+## Wire GitHub + Binance + SybaKiller
 
-Set `BINANCE_API_KEY` and `BINANCE_API_SECRET` in `.env`. Use `BINANCE_TESTNET=true` first.
+1. **GitHub** (already done if `gh auth status` is green): `gh auth setup-git`
+2. **Binance testnet keys**: open [testnet.binance.vision](https://testnet.binance.vision/) → **Log in with GitHub** → create HMAC API key
+3. **Save keys into `.env`** (never commit):
 
-Without keys, market data still streams; `/orders` returns 503.
+```bash
+make binance-setup    # interactive — sets BINANCE_TESTNET, key, secret
+make verify-binance # signed account check + live testnet tick
+make run            # gh + binance verify + API on :8000
+```
+
+`.env` defaults to `BINANCE_TESTNET=true` so market data and orders use testnet endpoints.
+
+Without keys, testnet **market data still works**; `/orders` returns 503 until keys are set.
 
 ## Control plane
 
@@ -94,8 +104,17 @@ Copy `.env.example` → `.env`. Keys: `REDIS_URL`, `DATABASE_URL`, risk limits, 
 
 Enable **Cursor Privacy Mode** for proprietary strategy code.
 
+## Upgrading
+
+```bash
+make upgrade   # bump locked dependencies
+make test && make smoke
+```
+
+Roadmap: [docs/UPGRADE.md](docs/UPGRADE.md)
+
 ## Next build targets
 
-- Live `ExchangeAdapter` for your venue
-- WebSocket market data feed
-- Strategy module + Redis event bus
+- User Data Stream (live fill/order updates)
+- Exchange filter cache (`exchangeInfo`)
+- Prometheus `/metrics` + Timescale tick history

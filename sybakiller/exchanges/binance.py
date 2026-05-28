@@ -46,6 +46,7 @@ class BinanceExchangeAdapter(ExchangeAdapter):
             self._session = aiohttp.ClientSession(
                 headers={"X-MBX-APIKEY": self._api_key},
                 timeout=aiohttp.ClientTimeout(total=10),
+                trust_env=False,
             )
         return self._session
 

@@ -1,8 +1,9 @@
 import pytest
+from sybakiller.exchanges.paper import PaperExchangeAdapter
 from sybakiller.gateway import ExecutionGateway
 from sybakiller.order_book import OrderBook
 from sybakiller.risk import RiskManager
-from sybakiller.types import Order, OrderStatus
+from sybakiller.types import Order, OrderId, OrderStatus
 
 
 @pytest.fixture
@@ -37,6 +38,24 @@ async def test_idempotent_cancel(gateway: ExecutionGateway, sample_order: Order,
     assert second.success
     assert second.message == "already cancelled"
     assert len(adapter.cancelled) == 1
+
+
+class _FailingAdapter(PaperExchangeAdapter):
+    async def submit_order(self, order: Order) -> OrderId:
+        raise RuntimeError("binance 400: {'code': -1013}")
+
+
+@pytest.mark.asyncio
+async def test_exchange_error_rejected(
+    book: OrderBook, risk: RiskManager, sample_order: Order
+) -> None:
+    gateway = ExecutionGateway(book=book, risk=risk, adapter=_FailingAdapter())
+    result = await gateway.place_order(sample_order, now=10.0)
+    assert not result.success
+    assert "binance 400" in result.message
+    stored = gateway.book.get_order(sample_order.client_order_id)
+    assert stored is not None
+    assert stored.status is OrderStatus.REJECTED
 
 
 @pytest.mark.asyncio

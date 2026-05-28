@@ -1,6 +1,6 @@
 [project]
 name = "sybakiller"
-version = "0.1.0"
+version = "0.2.0-dev"
 description = "Low-latency trading bot stack — ingest, book, risk, execution"
 readme = "README.md"
 requires-python = ">=3.11"

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from sybakiller.adapters.base import ExchangeAdapter
 from sybakiller.config import Settings
 from sybakiller.exchanges.binance import BinanceExchangeAdapter
 from sybakiller.exchanges.paper import PaperExchangeAdapter
-from sybakiller.gateway import ExchangeAdapter
 
 
 def create_exchange_adapter(settings: Settings) -> ExchangeAdapter | None:

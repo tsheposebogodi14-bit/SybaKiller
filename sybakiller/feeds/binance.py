@@ -109,6 +109,7 @@ class BinanceLiveFeed(MarketDataAdapter):
             try:
                 async with websockets.connect(
                     url,
+                    proxy=None,
                     ping_interval=20,
                     ping_timeout=20,
                     close_timeout=5,

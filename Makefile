@@ -49,5 +49,14 @@ verify:
 smoke:
 	bash scripts/smoke-live.sh
 
+binance-setup:
+	bash scripts/setup-binance-env.sh
+
+verify-binance:
+	uv run python scripts/verify_binance.py
+
+run:
+	bash scripts/run-stack.sh
+
 pre-commit:
 	uv run pre-commit run --all-files

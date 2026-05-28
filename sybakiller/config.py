@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import Field, field_validator
+from pydantic import Field, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -51,7 +51,7 @@ class Settings(BaseSettings):
 
     @field_validator("market_data_provider")
     @classmethod
-    def _provider_not_simulated_in_prod(cls, value: str, info) -> str:
+    def _provider_not_simulated_in_prod(cls, value: str, info: ValidationInfo) -> str:
         env = (info.data.get("syba_env") or "production").lower()
         if env == "production" and value.lower() == "simulated":
             raise ValueError("simulated feed is not allowed when SYBA_ENV=production")

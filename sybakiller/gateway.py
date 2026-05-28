@@ -45,7 +45,11 @@ class ExecutionGateway:
 
         self.book.register_order(order)
         await self.adapter.rate_limiter.acquire("order")
-        exchange_id = await self.adapter.submit_order(order)
+        try:
+            exchange_id = await self.adapter.submit_order(order)
+        except RuntimeError as exc:
+            order.status = OrderStatus.REJECTED
+            return GatewayResult(False, order.client_order_id, str(exc))
         self._exchange_ids[order.client_order_id] = exchange_id
         self._order_symbols[order.client_order_id] = str(order.symbol).upper()
         self.risk.record_order_sent(ts)
